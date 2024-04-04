@@ -10,7 +10,13 @@ api_hash = config.api_hash
 
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/api/chats':
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'All OK')
+
+        elif self.path == '/api/chats':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
@@ -72,7 +78,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 message_data['text'] += "\n(ВИДЕО)"
                             elif message.media.document.mime_type.startswith('image'):
                                 message_data['text'] += "\n(ИЗОБРАЖЕНИЕ или СТИКЕР)"
-                            elif message.media.document.mime_type.startswith('application'):
+                            elif message.media.document.mime_type.startswith('application') or message.media.document.mime_type.startswith('text'):
                                 message_data['text'] += "\n(ФАЙЛ)"
                         elif hasattr(message.media, 'sticker'):
                             message_data['text'] += "\n(СТИКЕР)"
