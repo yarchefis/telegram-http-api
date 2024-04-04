@@ -1,4 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socket import gethostbyname, gethostname
 from telethon.sync import TelegramClient
 import json
 import config
@@ -78,9 +79,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(b'404 Not Found')
 
 def run(server_class=HTTPServer, handler_class=RequestHandler, port=8000):
-    server_address = ('', port)
+    host_name = gethostbyname(gethostname())
+    server_address = (host_name, port)
+    print(f'Starting server on {host_name}:{port}...')
     httpd = server_class(server_address, handler_class)
-    print(f'Starting server on port {port}...')
     httpd.serve_forever()
 
 if __name__ == "__main__":
