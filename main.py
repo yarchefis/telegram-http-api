@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socket import gethostbyname, gethostname
 from telethon.sync import TelegramClient
+from telethon.tl.types import User
 import json
 import config
 
@@ -21,9 +22,15 @@ class RequestHandler(BaseHTTPRequestHandler):
                 for dialog in dialogs:
                     if dialog.is_user and not dialog.entity.bot:
                         entity = dialog.entity
+                        if isinstance(entity, User):
+                            title = entity.first_name
+                            if entity.last_name:
+                                title += ' ' + entity.last_name
+                        else:
+                            title = entity.title
                         chat = {
                             'id': entity.id,
-                            'title': entity.first_name if entity.first_name else entity.title,
+                            'title': title,
                             'username': entity.username if entity.username else None
                         }
                         chats.append(chat)
