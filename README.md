@@ -1,9 +1,37 @@
-go to https://my.telegram.org/apps and create you app
-open config.py and put you api_id and api_hash
-run main.py and login to you telegram account
+Инструкция для установки сервера на linux:
 
----
+1. Установка python на debian/Ubuntu:
+Обновите систему
+```sudo apt update```
+Установите питон
+```sudo apt install python3 python3-pip```
 
-перейдите на страницу https://my.telegram.org/apps и создайте приложение
-откройте config.py и поместите api_id и api_hash в переменные
-запустите main.py и войдите в аккаунт телеграм 
+Установка python на Arch/Manjaro:
+Обновите систему
+```sudo pacman -Sy```
+Установите питон
+```sudo pacman -S python python-pip```
+
+
+2. Установка библиотек:
+```pip install telethon --break-system-packages```
+
+
+3. Настройка:
+- Перейдите на страницу https://my.telegram.org/apps и создайте приложение.
+- Клонируйте репозиторий(необходимо установить пакет git)
+```git clone https://github.com/yarchefis/telegram-http-api```
+- откройте config.py(предварительно войдя в cклонированную папку cd telegram-http-api)
+```nano config.py```
+- На странице создания приложения вы получили api_id и api_hash
+- вставьте их в переменные в файле между кавычками
+пример
+```
+api_id = '12345678'
+api_hash = 'g56ogrp6gro65656565gfghy'
+```
+- Запустите сервер командой ```python3 main.py```
+- Вы получите id адрес и порт
+- перейдите на страницу ipадрес:порт/api/chats, страница будет долго грузится.
+тем временем в консоли вас попросят ввести номер телефона затем код(его пришлет официальный бот телеграма) и облачный пароль если он есть(пароль при печати отображатся не будет)
+после успешного входа у вас должна загрузится страница со списком ваших контактов.
