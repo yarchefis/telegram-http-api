@@ -1,5 +1,5 @@
 Инструкция для установки сервера на linux:    
----
+
 Установка python на debian/Ubuntu:    
 Обновите систему ```sudo apt update```
 Установите питон    
@@ -9,7 +9,7 @@
 Обновите систему ```sudo pacman -Sy```
 Установите питон    
 ```sudo pacman -S python python-pip```
----  
+
      
 Установка библиотек:    
 ```pip install telethon --break-system-packages```
