@@ -1,10 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socket import gethostbyname, gethostname
 from telethon.sync import TelegramClient
-from telethon.tl.types import User
+from telethon.tl.types import User, Chat, Channel
 import json
 import config
 import urllib.parse
+from telethon.tl.types import InputPeerChat, InputPeerChannel, InputPeerUser
 
 api_id = config.api_id
 api_hash = config.api_hash
@@ -51,22 +52,19 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 chats = []
                 for dialog in dialogs:
-                    if dialog.is_user and not dialog.entity.bot:
-                        entity = dialog.entity
-                        if isinstance(entity, User):
-                            title = entity.first_name
-                            if entity.last_name:
-                                title += ' ' + entity.last_name
-                        else:
-                            title = entity.title
+                    entity = client.get_input_entity(dialog.entity)
+                    if isinstance(entity, (InputPeerChat, InputPeerChannel)):
+                        title = dialog.entity.title
                         chat = {
-                            'id': entity.id,
+                            'id': dialog.entity.id,
                             'title': title,
-                            'username': entity.username if entity.username else None
+                            'username': entity.username if hasattr(entity, 'username') else None
                         }
                         chats.append(chat)
 
                 self.wfile.write(json.dumps(chats, ensure_ascii=False, indent=4).encode('utf-8'))
+
+
 
         elif self.path.startswith('/api/chat/'):
             components = self.path.split('/')
@@ -83,9 +81,12 @@ class RequestHandler(BaseHTTPRequestHandler):
                 for message in messages:
                     sender_name = None
                     if message.sender:
-                        sender_name = message.sender.first_name
-                        if not sender_name:
-                            sender_name = message.sender.username
+                        if isinstance(message.sender, User):
+                            sender_name = message.sender.first_name
+                            if not sender_name:
+                                sender_name = message.sender.username
+                        elif isinstance(message.sender, Chat) or isinstance(message.sender, Channel):
+                            sender_name = message.sender.title
                     message_data = {
                         'id': message.id,
                         'text': message.text,
