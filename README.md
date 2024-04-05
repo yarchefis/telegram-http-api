@@ -1,6 +1,6 @@
 Инструкция для установки сервера на linux:    
-
-1. Установка python на debian/Ubuntu:    
+---
+Установка python на debian/Ubuntu:    
 Обновите систему ```sudo apt update```
 Установите питон    
 ```sudo apt install python3 python3-pip```
@@ -9,13 +9,13 @@
 Обновите систему ```sudo pacman -Sy```
 Установите питон    
 ```sudo pacman -S python python-pip```
-    
+---  
      
-2. Установка библиотек:    
+Установка библиотек:    
 ```pip install telethon --break-system-packages```
     
     
-3. Настройка:    
+Настройка:    
 - Перейдите на страницу https://my.telegram.org/apps и создайте приложение.    
 - Клонируйте репозиторий(необходимо установить пакет git)
 ```git clone https://github.com/yarchefis/telegram-http-api```   
