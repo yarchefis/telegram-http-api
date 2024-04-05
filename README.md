@@ -9,19 +9,17 @@
 Обновите систему ```sudo pacman -Sy```
 Установите питон    
 ```sudo pacman -S python python-pip```
-
-     
+    
 #### Установка библиотек:    
 ```pip install telethon --break-system-packages```
     
-#### Инструкция для установки сервера на android(termux):
+## Инструкция для установки сервера на android(termux):
 
 - Если термукс установлен из плей маркета смело его удаляйте и установите к примеру из f-droid https://f-droid.org/ru/packages/com.termux/
 
 - Смените репозиторий если при выполнении команд ниже возникают ошибки
 termux-change-repo
 и выберите другой к примеру cloudflare
-
 
 #### Установка python:
 Обновите термукс ```pkg update```
@@ -33,7 +31,7 @@ termux-change-repo
 
 
    
-### Настройка:    
+## Настройка:    
 - Перейдите на страницу https://my.telegram.org/apps и создайте приложение.    
 - Клонируйте репозиторий(необходимо установить пакет git)
 ```git clone https://github.com/yarchefis/telegram-http-api```   
