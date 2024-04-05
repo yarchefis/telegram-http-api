@@ -5,7 +5,9 @@ from telethon.tl.types import User, Chat, Channel
 import json
 import config
 import urllib.parse
-from telethon.tl.types import InputPeerChat, InputPeerChannel, InputPeerUser
+import json
+import config
+import urllib.parse
 
 api_id = config.api_id
 api_hash = config.api_hash
@@ -14,7 +16,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
         path_components = parsed_path.path.split('/')
-        
+
         if self.path == '/':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -30,7 +32,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
                 with TelegramClient('session_name', api_id, api_hash) as client:
                     client.send_message(int(chat_id), message_text)
-                
+
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
@@ -46,22 +48,25 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-
             with TelegramClient('session_name', api_id, api_hash) as client:
                 dialogs = client.get_dialogs()
-
                 chats = []
                 for dialog in dialogs:
-                    entity = client.get_input_entity(dialog.entity)
-                    if isinstance(entity, (InputPeerChat, InputPeerChannel)):
-                        title = dialog.entity.title
+                    entity = dialog.entity
+                    if isinstance(entity, User) or isinstance(entity, Channel):
+                        title = None
+                        if isinstance(entity, User):
+                            title = entity.first_name
+                            if entity.last_name:
+                                title += ' ' + entity.last_name
+                        elif isinstance(entity, Channel):
+                            title = entity.title
                         chat = {
-                            'id': dialog.entity.id,
+                            'id': entity.id,
                             'title': title,
-                            'username': entity.username if hasattr(entity, 'username') else None
+                            'username': entity.username if entity.username else None
                         }
                         chats.append(chat)
-
                 self.wfile.write(json.dumps(chats, ensure_ascii=False, indent=4).encode('utf-8'))
 
 
@@ -69,14 +74,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif self.path.startswith('/api/chat/'):
             components = self.path.split('/')
             chat_id = components[-1]
-
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-
             with TelegramClient('session_name', api_id, api_hash) as client:
                 messages = client.get_messages(int(chat_id), limit=10)
-
                 messages_list = []
                 for message in messages:
                     sender_name = None
@@ -85,8 +87,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                             sender_name = message.sender.first_name
                             if not sender_name:
                                 sender_name = message.sender.username
-                        elif isinstance(message.sender, Chat) or isinstance(message.sender, Channel):
-                            sender_name = message.sender.title
+                        elif isinstance(message.sender, Channel):
+                            sender_name = message.sender.title  # Для каналов используем атрибут title
                     message_data = {
                         'id': message.id,
                         'text': message.text,
@@ -109,20 +111,17 @@ class RequestHandler(BaseHTTPRequestHandler):
                         elif hasattr(message.media, 'sticker'):
                             message_data['text'] += "\n(СТИКЕР)"
                     messages_list.append(message_data)
-
                 self.wfile.write(json.dumps(messages_list, ensure_ascii=False, indent=4).encode('utf-8'))
 
         else:
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b'404 Not Found')
-
 def run(server_class=HTTPServer, handler_class=RequestHandler, port=8000):
     host_name = gethostbyname(gethostname())
     server_address = (host_name, port)
     print(f'Starting server on {host_name}:{port}...')
     httpd = server_class(server_address, handler_class)
     httpd.serve_forever()
-
 if __name__ == "__main__":
     run()
