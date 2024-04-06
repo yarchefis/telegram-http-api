@@ -48,6 +48,7 @@ termux-change-repo
 ```
 api_id = '12345678'
 api_hash = 'g56ogrp6gro65656565gfghy'
+max_msg = 10 
 ```
 - Запустите сервер командой ```python3 main.py```
 - Вы получите id адрес и порт
