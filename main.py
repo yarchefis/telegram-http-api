@@ -1,10 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socket import gethostbyname, gethostname
 from telethon.sync import TelegramClient
-from telethon.tl.types import User, Chat, Channel
-import json
-import config
-import urllib.parse
+from telethon.tl.types import User, Channel
 import json
 import config
 import urllib.parse
@@ -13,6 +10,12 @@ api_id = config.api_id
 api_hash = config.api_hash
 
 class RequestHandler(BaseHTTPRequestHandler):
+    @staticmethod
+    def get_user_id(api_id, api_hash):
+        with TelegramClient('session_name', api_id, api_hash) as client:
+            me = client.get_me()
+            return me.id
+
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
         path_components = parsed_path.path.split('/')
@@ -69,8 +72,6 @@ class RequestHandler(BaseHTTPRequestHandler):
                         chats.append(chat)
                 self.wfile.write(json.dumps(chats, ensure_ascii=False, indent=4).encode('utf-8'))
 
-
-
         elif self.path.startswith('/api/chat/'):
             components = self.path.split('/')
             chat_id = components[-1]
@@ -89,12 +90,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                                 sender_name = message.sender.username
                         elif isinstance(message.sender, Channel):
                             sender_name = message.sender.title  # Для каналов используем атрибут title
+                    you = True if message.sender_id == self.user_id else False
                     message_data = {
                         'id': message.id,
                         'text': message.text,
                         'sender_id': message.sender_id,
                         'sender_name': sender_name,
-                        'date': message.date.timestamp()
+                        'date': message.date.timestamp(),
+                        'you': you
                     }
                     if message.media is not None:
                         if hasattr(message.media, 'photo'):
@@ -117,11 +120,21 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b'404 Not Found')
+
 def run(server_class=HTTPServer, handler_class=RequestHandler, port=8000):
     host_name = gethostbyname(gethostname())
     server_address = (host_name, port)
     print(f'Starting server on {host_name}:{port}...')
+    
+    # Получение user_id
+    user_id = RequestHandler.get_user_id(api_id, api_hash)
+    print(f"Your user_id: {user_id}")
+
+    # Передача user_id в обработчик запросов
+    RequestHandler.user_id = user_id
+    
     httpd = server_class(server_address, handler_class)
     httpd.serve_forever()
+
 if __name__ == "__main__":
     run()
