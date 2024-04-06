@@ -8,7 +8,7 @@ import urllib.parse
 
 api_id = config.api_id
 api_hash = config.api_hash
-
+max_msg = config.max_msg
 class RequestHandler(BaseHTTPRequestHandler):
     @staticmethod
     def get_user_id(api_id, api_hash):
@@ -79,7 +79,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             with TelegramClient('session_name', api_id, api_hash) as client:
-                messages = client.get_messages(int(chat_id), limit=10)
+                messages = client.get_messages(int(chat_id), limit=max_msg)
                 messages_list = []
                 for message in messages:
                     sender_name = None
