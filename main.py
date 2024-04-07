@@ -5,10 +5,15 @@ from telethon.tl.types import User, Channel
 import json
 import config
 import urllib.parse
+import os
+import re
+
 
 api_id = config.api_id
 api_hash = config.api_hash
 max_msg = config.max_msg
+chats_per_page = config.chats_per_page
+
 class RequestHandler(BaseHTTPRequestHandler):
     @staticmethod
     def get_user_id(api_id, api_hash):
@@ -22,9 +27,26 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if self.path == '/':
             self.send_response(200)
-            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(b'All OK')
+            
+            # Считываем содержимое файла config.py
+            with open('config.py', 'r') as config_file:
+                config_data = config_file.read()
+
+            # Используем регулярные выражения для поиска и извлечения значений max_msg и chats_per_page
+            max_msg_value = re.search(r'max_msg\s*=\s*(\d+)', config_data).group(1)
+            chats_per_page_value = re.search(r'chats_per_page\s*=\s*(\d+)', config_data).group(1)
+
+            # Формируем JSON объект
+            response_json = json.dumps({
+                "max_msg": int(max_msg_value),
+                "chats_per_page": int(chats_per_page_value)
+            }, ensure_ascii=False, indent=4)
+
+            # Отправляем JSON объект в качестве ответа
+            self.wfile.write(response_json.encode('utf-8'))
+
 
         elif path_components[1] == 'api' and path_components[2] == 'chat' and len(path_components) == 5 and path_components[4] == 'msg':
             # New route /api/chat/<id>/msg?text=<тут_текст>
@@ -46,6 +68,39 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 self.wfile.write(b'Missing text parameter in query')
+
+        elif self.path.startswith('/api/chats?page='):
+            parsed_path = urllib.parse.urlparse(self.path)
+            query_components = urllib.parse.parse_qs(parsed_path.query)
+            page_number = int(query_components['page'][0])
+
+            
+            start_index = (page_number - 1) * chats_per_page
+            end_index = start_index + chats_per_page
+
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            with TelegramClient('session_name', api_id, api_hash) as client:
+                dialogs = client.get_dialogs()
+                chats = []
+                for dialog in dialogs[start_index:end_index]:
+                    entity = dialog.entity
+                    if isinstance(entity, User) or isinstance(entity, Channel):
+                        title = None
+                        if isinstance(entity, User):
+                            title = entity.first_name
+                            if entity.last_name:
+                                title += ' ' + entity.last_name
+                        elif isinstance(entity, Channel):
+                            title = entity.title
+                        chat = {
+                            'id': entity.id,
+                            'title': title,
+                            'username': entity.username if entity.username else None
+                        }
+                        chats.append(chat)
+                self.wfile.write(json.dumps(chats, ensure_ascii=False, indent=4).encode('utf-8'))
 
         elif self.path == '/api/chats':
             self.send_response(200)
