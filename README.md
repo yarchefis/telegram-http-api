@@ -21,6 +21,12 @@
     
 ## Инструкция для установки сервера на android(termux):
 
+введите wget https://raw.githubusercontent.com/yarchefis/telegram-http-api/main/install.sh
+затем chmod +x install.sh
+затем запустите файл ./install.sh и следуйте указаниям
+
+или
+
 - Если термукс установлен из плей маркета смело его удаляйте и установите к примеру из f-droid https://f-droid.org/ru/packages/com.termux/
 
 - Смените репозиторий если при выполнении команд ниже возникают ошибки
