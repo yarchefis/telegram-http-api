@@ -26,6 +26,8 @@ read api_hash
 sed -i "s/api_id = ''/api_id = '$api_id'/" config.py
 sed -i "s/api_hash = ''/api_hash = '$api_hash'/" config.py
 
+cd
+
 # Создание файла start.sh
 echo "#!/bin/bash" > start.sh
 echo "python3 main.py" >> start.sh
