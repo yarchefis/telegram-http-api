@@ -16,14 +16,15 @@ pip install telethon --break-system-packages
 git clone https://github.com/yarchefis/telegram-http-api
 cd telegram-http-api
 
-# Создание файла config.py
+# Запрос и вставка api_id и api_hash в файл config.py
 echo "Введите api_id:"
 read api_id
 echo "Введите api_hash:"
 read api_hash
-echo "max_msg = 10" > config.py
-echo "api_id = '$api_id'" >> config.py
-echo "api_hash = '$api_hash'" >> config.py
+
+# Вставка значений в файл config.py
+sed -i "s/api_id = ''/api_id = '$api_id'/" config.py
+sed -i "s/api_hash = ''/api_hash = '$api_hash'/" config.py
 
 # Создание файла start.sh
 echo "#!/bin/bash" > start.sh
