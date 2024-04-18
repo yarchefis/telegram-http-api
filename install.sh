@@ -33,7 +33,7 @@ cd ~/
 
 # Создание файла start.sh
 echo "#!/bin/bash" > start.sh
-echo "python3 main.py" >> start.sh
+echo "python3 telegram-http-api/main.py" >> start.sh
 chmod +x start.sh
 
 echo "Установка завершена. Теперь запустите ./start.sh для запуска сервера."
